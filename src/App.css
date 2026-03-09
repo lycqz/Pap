@@ -59,6 +59,17 @@ body{
   transition: filter 0.6s ease; /* smooth blur animation */
 }
 
+/* MOVIE TITLE REVEAL */
+
+.movie-reveal{
+  text-align:center;
+  margin-top:15px;
+  font-size:22px;
+  font-weight:bold;
+}
+
+/* HINTS */
+
 .hints{
   margin-top:10px;
 }
