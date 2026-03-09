@@ -54,7 +54,7 @@ function App() {
 
     if (newGuesses >= 5) {
       setGameOver(true);
-      alert("💀 You lost! The movie was " + targetMovie.title);
+      alert(`${t.win} ${targetMovie.title}`);
     }
 
   };
