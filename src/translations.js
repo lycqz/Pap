@@ -1,4 +1,4 @@
-const translations = {
+const translations = { 
   en: {
     title: "Guess The Movie",
     settings: "Settings",
@@ -7,7 +7,9 @@ const translations = {
     year: "Year",
     genre: "Genre",
     guesses: "Guesses",
-    playAgain: "Play Again"
+    playAgain: "Play Again",
+    win: "🎉 Correct! The movie was",
+    lose: "💀 You lost! The movie was"
   },
 
   pt: {
@@ -18,7 +20,9 @@ const translations = {
     year: "Ano",
     genre: "Género",
     guesses: "Tentativas",
-    playAgain: "Jogar Novamente"
+    playAgain: "Jogar Novamente",
+    win: "🎉 Acertaste! O filme era",
+    lose: "💀 Perdeste! O filme era"
   },
 
   es: {
@@ -29,7 +33,9 @@ const translations = {
     year: "Año",
     genre: "Género",
     guesses: "Intentos",
-    playAgain: "Jugar de Nuevo"
+    playAgain: "Jugar de Nuevo",
+    win: "🎉 ¡Correcto! La película era",
+    lose: "💀 ¡Perdiste! La película era"
   },
 
   fr: {
@@ -40,7 +46,9 @@ const translations = {
     year: "Année",
     genre: "Genre",
     guesses: "Essais",
-    playAgain: "Rejouer"
+    playAgain: "Rejouer",
+    win: "🎉 Correct ! Le film était",
+    lose: "💀 Tu as perdu ! Le film était"
   },
 
   it: {
@@ -51,7 +59,9 @@ const translations = {
     year: "Anno",
     genre: "Genere",
     guesses: "Tentativi",
-    playAgain: "Gioca di Nuovo"
+    playAgain: "Gioca di Nuovo",
+    win: "🎉 Corretto! Il film era",
+    lose: "💀 Hai perso! Il film era"
   }
 };
 
