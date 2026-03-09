@@ -62,10 +62,17 @@ body{
 /* MOVIE TITLE REVEAL */
 
 .movie-reveal{
-  text-align:center;
   margin-top:15px;
-  font-size:22px;
+  font-size:24px;
+  color:#ffd700;
+  text-align:center;
   font-weight:bold;
+  animation:fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
 }
 
 /* HINTS */
