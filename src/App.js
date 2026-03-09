@@ -42,10 +42,11 @@ function App() {
 
     if (!targetMovie || gameOver) return;
 
-    if (movie.id === targetMovie.id) {
-      setGuesses(5);
+    // safer comparison
+    if (movie.title === targetMovie.title) {
+      setGuesses(guesses + 1);
       setGameOver(true);
-      alert("🎉 Correct! The movie was " + targetMovie.title);
+      alert(`${t.win} ${targetMovie.title}`);
       return;
     }
 
@@ -54,7 +55,7 @@ function App() {
 
     if (newGuesses >= 5) {
       setGameOver(true);
-      alert(`${t.win} ${targetMovie.title}`);
+      alert(`${t.lose} ${targetMovie.title}`);
     }
 
   };
