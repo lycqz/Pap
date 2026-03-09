@@ -42,7 +42,6 @@ function App() {
 
     if (!targetMovie || gameOver) return;
 
-    // safer comparison
     if (movie.title === targetMovie.title) {
       setGuesses(guesses + 1);
       setGameOver(true);
@@ -132,6 +131,13 @@ function App() {
             style={{ filter: `blur(${blurAmount}px)` }}
           />
 
+          {/* MOVIE TITLE REVEAL */}
+          {gameOver && (
+            <h2 className="movie-reveal">
+              🎬 {targetMovie.title}
+            </h2>
+          )}
+
           <div className="hints">
 
             <p>⭐ {t.rating}: {targetMovie.vote_average}</p>
@@ -166,4 +172,3 @@ function App() {
 }
 
 export default App;
-
