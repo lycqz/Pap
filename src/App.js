@@ -60,7 +60,7 @@ function App() {
 
   };
 
-  const blurAmount = Math.max(15 - guesses * 3, 0);
+  const blurAmount = gameOver ? 0 : Math.max(15 - guesses * 3, 0);
 
   const movieGenre =
     genres.find(g => g.id === targetMovie?.genre_ids?.[0])?.name || "Unknown";
@@ -166,3 +166,4 @@ function App() {
 }
 
 export default App;
+
