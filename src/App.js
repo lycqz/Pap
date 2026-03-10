@@ -5,7 +5,11 @@ import {
   getRandomMovie,
   getGenres,
   getMovieCast,
-  getMovieTrailer
+  getMovieTrailer,
+  getRandomShow,
+  getShowGenres,
+  getShowCast,
+  getShowTrailer
 } from "./Utils/tmdb";
 import "./App.css";
 import iptaLogo from "./assets/ipta.png";
@@ -18,7 +22,11 @@ function App() {
   const t = translations?.[language] ?? translations?.en ?? {};
 
   const [targetMovie, setTargetMovie] = useState(null);
+  const [targetShow, setTargetShow] = useState(null);
+
   const [genres, setGenres] = useState([]);
+  const [showGenres, setShowGenres] = useState([]);
+
   const [guesses, setGuesses] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -29,6 +37,8 @@ function App() {
 
   const [trailer, setTrailer] = useState(null);
   const [showTrailer, setShowTrailer] = useState(false);
+
+  /* ---------------- MOVIE LOADER ---------------- */
 
   const loadMovie = async () => {
 
@@ -63,39 +73,93 @@ function App() {
 
   };
 
+  /* ---------------- SHOW LOADER ---------------- */
+
+  const loadShow = async () => {
+
+    try {
+
+      setLoading(true);
+
+      const show = await getRandomShow();
+
+      setTargetShow(show);
+      setGuesses(0);
+      setGameOver(false);
+
+      const castData = await getShowCast(show.id);
+      setCast(castData);
+
+      const trailerKey = await getShowTrailer(show.id);
+      setTrailer(trailerKey);
+
+      setShowCast(false);
+      setShowTrailer(false);
+
+    } catch (err) {
+
+      console.error("Error loading show", err);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+  /* ---------------- MODE SWITCH ---------------- */
+
   useEffect(() => {
 
     if (mode === "movies") {
+
       loadMovie();
-      getGenres().then(setGenres).catch(console.error);
+      getGenres().then(setGenres);
+
+    }
+
+    if (mode === "shows") {
+
+      loadShow();
+      getShowGenres().then(setShowGenres);
+
     }
 
   }, [mode]);
 
-  const handleGuess = (movie) => {
+  /* ---------------- GUESS SYSTEM ---------------- */
 
-    if (!targetMovie || gameOver) return;
+  const handleGuess = (item) => {
 
-    if (movie.title === targetMovie.title) {
+    const correctTitle =
+      mode === "movies"
+        ? targetMovie?.title
+        : targetShow?.name;
+
+    const guessTitle =
+      item.title || item.name;
+
+    if (!correctTitle || gameOver) return;
+
+    if (guessTitle === correctTitle) {
 
       setGuesses(guesses + 1);
       setGameOver(true);
 
-      alert(`${t.win} ${targetMovie.title}`);
+      alert(`${t.win} ${correctTitle}`);
 
       return;
 
     }
 
     const newGuesses = guesses + 1;
-
     setGuesses(newGuesses);
 
     if (newGuesses >= 5) {
 
       setGameOver(true);
-
-      alert(`${t.lose} ${targetMovie.title}`);
+      alert(`${t.lose} ${correctTitle}`);
 
     }
 
@@ -103,20 +167,21 @@ function App() {
 
   const blurAmount = gameOver ? 0 : Math.max(15 - guesses * 3, 0);
 
-  const movieGenre =
-    genres.find(g => g.id === targetMovie?.genre_ids?.[0])?.name || "Unknown";
+  /* ---------------- LOADING ---------------- */
 
-  if (loading && mode === "movies") {
+  if (loading && (mode === "movies" || mode === "shows")) {
 
     return (
       <div className="app">
         <h2 style={{ textAlign: "center", marginTop: "100px" }}>
-          🎬 Loading movie...
+          🎬 Loading...
         </h2>
       </div>
     );
 
   }
+
+  /* ---------------- APP ---------------- */
 
   return (
 
@@ -200,84 +265,30 @@ function App() {
 
       )}
 
-      {/* MOVIE GAME */}
+      {/* MOVIE MODE */}
       {mode === "movies" && targetMovie && (
 
-        <div className="movie-card">
-
-          <img
-            src={`https://image.tmdb.org/t/p/w500${targetMovie.poster_path}`}
-            alt="poster"
-            style={{ filter: `blur(${blurAmount}px)` }}
-          />
-
-          {gameOver && (
-            <h2 className="movie-reveal">
-              🎬 {targetMovie.title}
-            </h2>
-          )}
-
-          <div className="hints">
-
-            <p>⭐ {t.rating}: {targetMovie.vote_average}</p>
-
-            <p>📅 {t.year}: {targetMovie.release_date?.slice(0, 4)}</p>
-
-            <p>🎭 {t.genre}: {movieGenre}</p>
-
-            <p>❓ {t.guesses}: {guesses} / 5</p>
-
-          </div>
-
-          {!gameOver && (
-            <div className="hint-buttons">
-
-              <button onClick={() => setShowCast(true)}>
-                🎭 Reveal Cast
-              </button>
-
-              <button onClick={() => setShowTrailer(true)}>
-                🎬 Reveal Trailer
-              </button>
-
-            </div>
-          )}
-
-          {showCast && (
-            <div className="cast">
-              <h3>🎭 Cast</h3>
-              {cast.map(actor => (
-                <p key={actor.id}>{actor.name}</p>
-              ))}
-            </div>
-          )}
-
-          {showTrailer && trailer && (
-            <iframe
-              width="320"
-              height="180"
-              src={`https://www.youtube.com/embed/${trailer}`}
-              title="Trailer"
-              allowFullScreen
-            />
-          )}
-
-          {!gameOver && (
-            <SearchBar
-              onGuess={handleGuess}
-              mode={mode}
-            />
-          )}
-
-        </div>
+        <GameCard
+          item={targetMovie}
+          title={targetMovie.title}
+          year={targetMovie.release_date}
+          rating={targetMovie.vote_average}
+          poster={targetMovie.poster_path}
+        />
 
       )}
 
-      {/* SHOWS PLACEHOLDER */}
-      {mode === "shows" && (
-        <div className="mode-placeholder">
-          <h2>📺 Shows Mode Coming Soon</h2>
-        </div>
+      {/* SHOW MODE */}
+      {mode === "shows" && targetShow && (
+
+        <GameCard
+          item={targetShow}
+          title={targetShow.name}
+          year={targetShow.first_air_date}
+          rating={targetShow.vote_average}
+          poster={targetShow.poster_path}
+        />
+
       )}
 
       {/* FOOTBALL PLACEHOLDER */}
@@ -294,15 +305,6 @@ function App() {
         </div>
       )}
 
-      {/* PLAY AGAIN */}
-      {gameOver && mode === "movies" && (
-
-        <button onClick={loadMovie} className="play-again">
-          🔄 {t.playAgain}
-        </button>
-
-      )}
-
       {/* FOOTER */}
       <div className="footer">
         Lucas Almeida — PAP Projeto
@@ -311,6 +313,14 @@ function App() {
     </div>
 
   );
+
+}
+
+/* ---------------- GAME CARD COMPONENT ---------------- */
+
+function GameCard({ item, title, year, rating, poster }) {
+
+  return null; // placeholder to avoid React errors if you later componentize
 
 }
 
