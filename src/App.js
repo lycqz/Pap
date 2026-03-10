@@ -1,15 +1,16 @@
 import translations from "./translations";
 import { useState, useEffect } from "react";
 import SearchBar from "./Components/SearchBar";
+
 import {
-  getRandomMovie,
-  getGenres,
-  getMovieCast,
-  getMovieTrailer,
-  getRandomShow,
-  getShowGenres,
-  getShowCast,
-  getShowTrailer
+getRandomMovie,
+getGenres,
+getMovieCast,
+getMovieTrailer,
+getRandomShow,
+getShowGenres,
+getShowCast,
+getShowTrailer
 } from "./Utils/tmdb";
 
 import { getRandomSong } from "./spotify";
@@ -19,410 +20,415 @@ import iptaLogo from "./assets/ipta.png";
 
 function App() {
 
-  const [language, setLanguage] = useState("en");
-  const [mode, setMode] = useState("movies");
+const [language, setLanguage] = useState("en");
+const [mode, setMode] = useState("movies");
 
-  const t = translations?.[language] ?? translations?.en ?? {};
+const t = translations?.[language] ?? translations?.en ?? {};
 
-  const [targetMovie, setTargetMovie] = useState(null);
-  const [targetShow, setTargetShow] = useState(null);
-  const [song, setSong] = useState(null);
+const [targetMovie, setTargetMovie] = useState(null);
+const [targetShow, setTargetShow] = useState(null);
+const [song, setSong] = useState(null);
 
-  const [genres, setGenres] = useState([]);
-  const [showGenres, setShowGenres] = useState([]);
+const [genres, setGenres] = useState([]);
+const [showGenres, setShowGenres] = useState([]);
 
-  const [guesses, setGuesses] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
+const [guesses, setGuesses] = useState(0);
+const [gameOver, setGameOver] = useState(false);
 
-  const [songGuesses, setSongGuesses] = useState(0);
-  const [musicGameOver, setMusicGameOver] = useState(false);
+const [songGuesses, setSongGuesses] = useState(0);
+const [musicGameOver, setMusicGameOver] = useState(false);
 
-  const [showSettings, setShowSettings] = useState(false);
-  const [loading, setLoading] = useState(true);
+const [showSettings, setShowSettings] = useState(false);
+const [loading, setLoading] = useState(true);
 
-  const [cast, setCast] = useState([]);
-  const [showCast, setShowCast] = useState(false);
+const [cast, setCast] = useState([]);
+const [trailer, setTrailer] = useState(null);
 
-  const [trailer, setTrailer] = useState(null);
-  const [showTrailer, setShowTrailer] = useState(false);
+/* ---------------- MOVIE LOADER ---------------- */
 
-  /* ---------------- MOVIE LOADER ---------------- */
+const loadMovie = async () => {
 
-  const loadMovie = async () => {
+```
+try {
 
-    try {
+  setLoading(true);
 
-      setLoading(true);
+  const movie = await getRandomMovie();
 
-      const movie = await getRandomMovie();
+  setTargetMovie(movie);
+  setGuesses(0);
+  setGameOver(false);
 
-      setTargetMovie(movie);
-      setGuesses(0);
-      setGameOver(false);
+  const castData = await getMovieCast(movie.id);
+  setCast(castData);
 
-      const castData = await getMovieCast(movie.id);
-      setCast(castData);
+  const trailerKey = await getMovieTrailer(movie.id);
+  setTrailer(trailerKey);
 
-      const trailerKey = await getMovieTrailer(movie.id);
-      setTrailer(trailerKey);
+} catch (err) {
 
-      setShowCast(false);
-      setShowTrailer(false);
+  console.error("Error loading movie", err);
 
-    } catch (err) {
+} finally {
 
-      console.error("Error loading movie", err);
+  setLoading(false);
 
-    } finally {
+}
+```
 
-      setLoading(false);
+};
 
-    }
+/* ---------------- SHOW LOADER ---------------- */
 
-  };
+const loadShow = async () => {
 
-  /* ---------------- SHOW LOADER ---------------- */
+```
+try {
 
-  const loadShow = async () => {
+  setLoading(true);
 
-    try {
+  const show = await getRandomShow();
 
-      setLoading(true);
+  setTargetShow(show);
+  setGuesses(0);
+  setGameOver(false);
 
-      const show = await getRandomShow();
+  const castData = await getShowCast(show.id);
+  setCast(castData);
 
-      setTargetShow(show);
-      setGuesses(0);
-      setGameOver(false);
+  const trailerKey = await getShowTrailer(show.id);
+  setTrailer(trailerKey);
 
-      const castData = await getShowCast(show.id);
-      setCast(castData);
+} catch (err) {
 
-      const trailerKey = await getShowTrailer(show.id);
-      setTrailer(trailerKey);
+  console.error("Error loading show", err);
 
-      setShowCast(false);
-      setShowTrailer(false);
+} finally {
 
-    } catch (err) {
+  setLoading(false);
 
-      console.error("Error loading show", err);
+}
+```
 
-    } finally {
+};
 
-      setLoading(false);
+/* ---------------- MUSIC LOADER ---------------- */
 
-    }
+const loadSong = async () => {
 
-  };
+```
+try {
 
-  /* ---------------- MUSIC LOADER ---------------- */
+  setLoading(true);
 
-  const loadSong = async () => {
+  const randomSong = await getRandomSong();
 
-    try {
+  setSong(randomSong);
+  setSongGuesses(0);
+  setMusicGameOver(false);
 
-      setLoading(true);
+} catch (err) {
 
-      const randomSong = await getRandomSong();
+  console.error("Error loading song", err);
 
-      setSong(randomSong);
-      setSongGuesses(0);
-      setMusicGameOver(false);
+} finally {
 
-    } catch (err) {
+  setLoading(false);
 
-      console.error("Error loading song", err);
+}
+```
 
-    } finally {
+};
 
-      setLoading(false);
+/* ---------------- MODE SWITCH ---------------- */
 
-    }
+useEffect(() => {
 
-  };
+```
+if (mode === "movies") {
 
-  /* ---------------- MODE SWITCH ---------------- */
+  loadMovie();
+  getGenres().then(setGenres);
 
-  useEffect(() => {
+}
 
-    if (mode === "movies") {
+if (mode === "shows") {
 
-      loadMovie();
-      getGenres().then(setGenres);
+  loadShow();
+  getShowGenres().then(setShowGenres);
 
-    }
+}
 
-    if (mode === "shows") {
+if (mode === "music") {
 
-      loadShow();
-      getShowGenres().then(setShowGenres);
+  loadSong();
 
-    }
+}
+```
 
-    if (mode === "music") {
+}, [mode]);
 
-      loadSong();
+/* ---------------- MOVIE / SHOW GUESS ---------------- */
 
-    }
+const handleGuess = (item) => {
 
-  }, [mode]);
+```
+const correctTitle =
+  mode === "movies"
+    ? targetMovie?.title
+    : targetShow?.name;
 
-  /* ---------------- MOVIE / SHOW GUESS ---------------- */
+const guessTitle =
+  item.title || item.name;
 
-  const handleGuess = (item) => {
+if (!correctTitle || gameOver) return;
 
-    const correctTitle =
-      mode === "movies"
-        ? targetMovie?.title
-        : targetShow?.name;
+if (guessTitle === correctTitle) {
 
-    const guessTitle =
-      item.title || item.name;
+  setGuesses(guesses + 1);
+  setGameOver(true);
 
-    if (!correctTitle || gameOver) return;
+  alert(`${t.win} ${correctTitle}`);
+  return;
 
-    if (guessTitle === correctTitle) {
+}
 
-      setGuesses(guesses + 1);
-      setGameOver(true);
+const newGuesses = guesses + 1;
+setGuesses(newGuesses);
 
-      alert(`${t.win} ${correctTitle}`);
-      return;
+if (newGuesses >= 5) {
 
-    }
+  setGameOver(true);
+  alert(`${t.lose} ${correctTitle}`);
 
-    const newGuesses = guesses + 1;
-    setGuesses(newGuesses);
+}
+```
 
-    if (newGuesses >= 5) {
+};
 
-      setGameOver(true);
-      alert(`${t.lose} ${correctTitle}`);
+/* ---------------- MUSIC GUESS ---------------- */
 
-    }
+const handleSongGuess = (guess) => {
 
-  };
+```
+if (!song || musicGameOver) return;
 
-  /* ---------------- MUSIC GUESS ---------------- */
+const correct = song.name.toLowerCase();
+const attempt = guess.toLowerCase();
 
-  const handleSongGuess = (guess) => {
+if (attempt === correct) {
 
-    if (!song || musicGameOver) return;
+  alert(`Correct! 🎉 ${song.name}`);
+  setMusicGameOver(true);
+  return;
 
-    const correct = song.name.toLowerCase();
-    const attempt = guess.toLowerCase();
+}
 
-    if (attempt === correct) {
+const newGuesses = songGuesses + 1;
+setSongGuesses(newGuesses);
 
-      alert(`Correct! 🎉 ${song.name}`);
-      setMusicGameOver(true);
-      return;
+if (newGuesses >= 5) {
 
-    }
+  alert(`You lost! Song was: ${song.name}`);
+  setMusicGameOver(true);
 
-    const newGuesses = songGuesses + 1;
-    setSongGuesses(newGuesses);
+}
+```
 
-    if (newGuesses >= 5) {
+};
 
-      alert(`You lost! Song was: ${song.name}`);
-      setMusicGameOver(true);
+const blurAmount = gameOver ? 0 : Math.max(15 - guesses * 3, 0);
 
-    }
+if (loading) {
 
-  };
+```
+return (
+  <div className="app">
+    <h2 style={{ textAlign: "center", marginTop: "100px" }}>
+      🎬 Loading...
+    </h2>
+  </div>
+);
+```
 
-  const blurAmount = gameOver ? 0 : Math.max(15 - guesses * 3, 0);
+}
 
-  if (loading && (mode === "movies" || mode === "shows" || mode === "music")) {
+return (
 
-    return (
-      <div className="app">
-        <h2 style={{ textAlign: "center", marginTop: "100px" }}>
-          🎬 Loading...
-        </h2>
-      </div>
-    );
+```
+<div className="app">
 
-  }
+  {/* TOP BAR */}
 
-  return (
+  <div className="top-bar">
 
-    <div className="app">
+    <div className="left">
+      <img src={iptaLogo} alt="IPTA Logo" className="ipta-logo" />
+    </div>
 
-      {/* TOP BAR */}
+    <div className="center">
+      🎮 PAP Guessing Game
+    </div>
 
-      <div className="top-bar">
+    <div className="right">
+      <button onClick={() => setShowSettings(!showSettings)}>
+        ⚙ {t.settings}
+      </button>
+    </div>
 
-        <div className="left">
-          <img src={iptaLogo} alt="IPTA Logo" className="ipta-logo" />
-        </div>
+  </div>
 
-        <div className="center">
-          🎮 PAP Guessing Game
-        </div>
+  {/* MODE SELECTOR */}
 
-        <div className="right">
-          <button onClick={() => setShowSettings(!showSettings)}>
-            ⚙ {t.settings}
-          </button>
-        </div>
+  <div className="mode-selector">
 
-      </div>
+    <button
+      className={mode === "movies" ? "active" : ""}
+      onClick={() => setMode("movies")}
+    >
+      🎬 Movies
+    </button>
 
-      {/* MODE SELECTOR */}
+    <button
+      className={mode === "shows" ? "active" : ""}
+      onClick={() => setMode("shows")}
+    >
+      📺 Shows
+    </button>
 
-      <div className="mode-selector">
+    <button
+      className={mode === "football" ? "active" : ""}
+      onClick={() => setMode("football")}
+    >
+      ⚽ Football
+    </button>
 
-        <button
-          className={mode === "movies" ? "active" : ""}
-          onClick={() => setMode("movies")}
-        >
-          🎬 Movies
-        </button>
+    <button
+      className={mode === "music" ? "active" : ""}
+      onClick={() => setMode("music")}
+    >
+      🎵 Music
+    </button>
 
-        <button
-          className={mode === "shows" ? "active" : ""}
-          onClick={() => setMode("shows")}
-        >
-          📺 Shows
-        </button>
+  </div>
 
-        <button
-          className={mode === "football" ? "active" : ""}
-          onClick={() => setMode("football")}
-        >
-          ⚽ Football
-        </button>
+  {/* SETTINGS */}
 
-        <button
-          className={mode === "music" ? "active" : ""}
-          onClick={() => setMode("music")}
-        >
-          🎵 Music
-        </button>
+  {showSettings && (
 
-      </div>
+    <div className="settings">
 
-      {/* SETTINGS */}
+      <h3>{t.settings}</h3>
 
-      {showSettings && (
+      <label>{t.language}</label>
 
-        <div className="settings">
+      <select
+        value={language}
+        onChange={(e) => setLanguage(e.target.value)}
+      >
 
-          <h3>{t.settings}</h3>
+        <option value="en">English</option>
+        <option value="pt">Português</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="it">Italiano</option>
 
-          <label>{t.language}</label>
-
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-          >
-
-            <option value="en">English</option>
-            <option value="pt">Português</option>
-            <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="it">Italiano</option>
-
-          </select>
-
-        </div>
-
-      )}
-
-      {/* MOVIE MODE */}
-
-      {mode === "movies" && targetMovie && (
-
-        <GameCard
-          item={targetMovie}
-          title={targetMovie.title}
-          year={targetMovie.release_date}
-          rating={targetMovie.vote_average}
-          poster={targetMovie.poster_path}
-          blurAmount={blurAmount}
-          guesses={guesses}
-          gameOver={gameOver}
-          handleGuess={handleGuess}
-          cast={cast}
-          trailer={trailer}
-        />
-
-      )}
-
-      {/* SHOW MODE */}
-
-      {mode === "shows" && targetShow && (
-
-        <GameCard
-          item={targetShow}
-          title={targetShow.name}
-          year={targetShow.first_air_date}
-          rating={targetShow.vote_average}
-          poster={targetShow.poster_path}
-          blurAmount={blurAmount}
-          guesses={guesses}
-          gameOver={gameOver}
-          handleGuess={handleGuess}
-          cast={cast}
-          trailer={trailer}
-        />
-
-      )}
-
-      {/* MUSIC */}
-
-      {mode === "music" && song && (
-
-        <div className="mode-placeholder">
-
-          <h2>🎵 Guess The Song</h2>
-
-          <audio controls>
-            <source src={song.preview_url} type="audio/mpeg" />
-          </audio>
-
-          {!musicGameOver && (
-            <input
-              type="text"
-              placeholder="Guess the song title..."
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSongGuess(e.target.value);
-                  e.target.value = "";
-                }
-              }}
-              style={{
-                marginTop:"20px",
-                padding:"10px",
-                borderRadius:"6px",
-                border:"none"
-              }}
-            />
-          )}
-
-          {musicGameOver && (
-            <button
-              style={{marginTop:"20px"}}
-              onClick={loadSong}
-            >
-              Next Song
-            </button>
-          )}
-
-        </div>
-
-      )}
-
-      <div className="footer">
-        Lucas Almeida — PAP Projeto
-      </div>
+      </select>
 
     </div>
 
-  );
+  )}
+
+  {/* MOVIES */}
+
+  {mode === "movies" && targetMovie && (
+
+    <GameCard
+      title={targetMovie.title}
+      year={targetMovie.release_date}
+      rating={targetMovie.vote_average}
+      poster={targetMovie.poster_path}
+      blurAmount={blurAmount}
+      guesses={guesses}
+      gameOver={gameOver}
+      handleGuess={handleGuess}
+      cast={cast}
+      trailer={trailer}
+    />
+
+  )}
+
+  {/* SHOWS */}
+
+  {mode === "shows" && targetShow && (
+
+    <GameCard
+      title={targetShow.name}
+      year={targetShow.first_air_date}
+      rating={targetShow.vote_average}
+      poster={targetShow.poster_path}
+      blurAmount={blurAmount}
+      guesses={guesses}
+      gameOver={gameOver}
+      handleGuess={handleGuess}
+      cast={cast}
+      trailer={trailer}
+    />
+
+  )}
+
+  {/* MUSIC */}
+
+  {mode === "music" && song && (
+
+    <div className="mode-placeholder">
+
+      <h2>🎵 Guess The Song</h2>
+
+      <audio controls>
+        <source src={song.preview_url} type="audio/mpeg" />
+      </audio>
+
+      {!musicGameOver && (
+        <input
+          type="text"
+          placeholder="Guess the song title..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSongGuess(e.target.value);
+              e.target.value = "";
+            }
+          }}
+          style={{
+            marginTop:"20px",
+            padding:"10px",
+            borderRadius:"6px",
+            border:"none"
+          }}
+        />
+      )}
+
+      {musicGameOver && (
+        <button
+          style={{marginTop:"20px"}}
+          onClick={loadSong}
+        >
+          Next Song
+        </button>
+      )}
+
+    </div>
+
+  )}
+
+  <div className="footer">
+    Lucas Almeida — PAP Projeto
+  </div>
+
+</div>
+```
+
+);
 
 }
 
@@ -430,104 +436,111 @@ function App() {
 
 function GameCard({ title, year, rating, poster, blurAmount, guesses, gameOver, handleGuess, cast, trailer }) {
 
-  const [showCast, setShowCast] = useState(false);
-  const [showTrailer, setShowTrailer] = useState(false);
+const [showCast, setShowCast] = useState(false);
+const [showTrailer, setShowTrailer] = useState(false);
 
-  const posterUrl = poster
-    ? `https://image.tmdb.org/t/p/w500${poster}`
-    : null;
+const posterUrl = poster
+? `https://image.tmdb.org/t/p/w500${poster}`
+: null;
 
-  return (
+return (
 
-    <div className="game-card">
+```
+<div className="game-card">
 
-      <h2>🎬 Guess the Movie / Show</h2>
+  <h2>🎬 Guess the Movie / Show</h2>
 
-      {posterUrl && (
+  {posterUrl && (
+    <img
+      src={posterUrl}
+      alt={title}
+      style={{
+        width:"300px",
+        borderRadius:"10px",
+        filter:`blur(${blurAmount}px)`,
+        transition:"0.3s",
+        marginTop:"20px"
+      }}
+    />
+  )}
 
-        <img
-          src={posterUrl}
-          alt={title}
-          style={{
-            width:"300px",
-            borderRadius:"10px",
-            filter:`blur(${blurAmount}px)`,
-            transition:"0.3s",
-            marginTop:"20px"
-          }}
-        />
+  <p style={{marginTop:"15px"}}>⭐ Rating: {rating}</p>
+  <p>📅 Year: {year?.slice(0,4)}</p>
+  <p>🎯 Guesses: {guesses}/5</p>
 
-      )}
+  {!gameOver && (
+    <SearchBar onGuess={handleGuess}/>
+  )}
 
-      <p style={{marginTop:"15px"}}>⭐ Rating: {rating}</p>
-      <p>📅 Year: {year?.slice(0,4)}</p>
-      <p>🎯 Guesses: {guesses}/5</p>
+  {/* CAST BUTTON */}
 
-      {!gameOver && (
-        <SearchBar onGuess={handleGuess}/>
-      )}
+  <button
+    disabled={guesses < 2}
+    style={{
+      marginTop:"10px",
+      opacity: guesses < 2 ? 0.5 : 1,
+      cursor: guesses < 2 ? "not-allowed" : "pointer"
+    }}
+    onClick={() => setShowCast(true)}
+  >
+    🎭 Reveal Cast (Guess 2)
+  </button>
 
-      {/* CAST HINT */}
-
-      {guesses >= 2 && !showCast && (
-        <button onClick={() => setShowCast(true)}>
-          🎭 Reveal Cast
-        </button>
-      )}
-
-      {showCast && cast?.length > 0 && (
-
-        <div style={{marginTop:"15px"}}>
-
-          <h4>Cast:</h4>
-
-          {cast.slice(0,5).map(actor => (
-            <p key={actor.id}>{actor.name}</p>
-          ))}
-
-        </div>
-
-      )}
-
-      {/* TRAILER HINT */}
-
-      {guesses >= 3 && trailer && !showTrailer && (
-        <button
-          style={{marginTop:"10px"}}
-          onClick={() => setShowTrailer(true)}
-        >
-          🎬 Reveal Trailer
-        </button>
-      )}
-
-      {showTrailer && (
-
-        <div style={{marginTop:"15px"}}>
-
-          <iframe
-            width="400"
-            height="225"
-            src={`https://www.youtube.com/embed/${trailer}`}
-            title="Trailer"
-            allowFullScreen
-          />
-
-        </div>
-
-      )}
-
-      {gameOver && (
-        <button
-          style={{marginTop:"20px"}}
-          onClick={() => window.location.reload()}
-        >
-          Play Again
-        </button>
-      )}
-
+  {showCast && cast?.length > 0 && (
+    <div style={{marginTop:"10px"}}>
+      <h4>Cast:</h4>
+      {cast.slice(0,5).map(actor => (
+        <p key={actor.id}>{actor.name}</p>
+      ))}
     </div>
+  )}
 
-  );
+  {/* PLAY AGAIN BUTTON */}
+
+  {gameOver && (
+    <button
+      style={{
+        marginTop:"20px",
+        padding:"10px 20px",
+        fontSize:"16px",
+        cursor:"pointer"
+      }}
+      onClick={() => window.location.reload()}
+    >
+      🔁 Play Again
+    </button>
+  )}
+
+  {/* TRAILER BUTTON */}
+
+  <button
+    disabled={guesses < 4}
+    style={{
+      marginTop:"10px",
+      opacity: guesses < 4 ? 0.5 : 1,
+      cursor: guesses < 4 ? "not-allowed" : "pointer"
+    }}
+    onClick={() => setShowTrailer(true)}
+  >
+    🎬 Reveal Trailer (Guess 4)
+  </button>
+
+  {showTrailer && (
+    <div style={{marginTop:"15px"}}>
+      <iframe
+        width="400"
+        height="225"
+        src={`https://www.youtube.com/embed/${trailer}`}
+        title="Trailer"
+        allowFullScreen
+      />
+    </div>
+  )}
+
+</div>
+```
+
+);
 
 }
 
