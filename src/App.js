@@ -1,8 +1,12 @@
-import { getRandomMovie, getGenres, getMovieCast } from "./Utils/tmdb";
 import translations from "./translations";
 import { useState, useEffect } from "react";
 import SearchBar from "./Components/SearchBar";
-import { getRandomMovie, getGenres } from "./Utils/tmdb";
+import {
+  getRandomMovie,
+  getGenres,
+  getMovieCast,
+  getMovieTrailer
+} from "./Utils/tmdb";
 import "./App.css";
 import iptaLogo from "./assets/ipta.png";
 
@@ -20,8 +24,16 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const [cast, setCast] = useState([]);
+  const [showCast, setShowCast] = useState(false);
+
+  const [trailer, setTrailer] = useState(null);
+  const [showTrailer, setShowTrailer] = useState(false);
+
   const loadMovie = async () => {
+
     try {
+
       setLoading(true);
 
       const movie = await getRandomMovie();
@@ -30,11 +42,25 @@ function App() {
       setGuesses(0);
       setGameOver(false);
 
+      const castData = await getMovieCast(movie.id);
+      setCast(castData);
+
+      const trailerKey = await getMovieTrailer(movie.id);
+      setTrailer(trailerKey);
+
+      setShowCast(false);
+      setShowTrailer(false);
+
     } catch (err) {
+
       console.error("Error loading movie", err);
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
   useEffect(() => {
@@ -206,6 +232,45 @@ function App() {
 
           </div>
 
+          {/* HINT BUTTONS */}
+
+          {!gameOver && (
+            <div className="hint-buttons">
+
+              <button onClick={() => setShowCast(true)}>
+                🎭 Reveal Cast
+              </button>
+
+              <button onClick={() => setShowTrailer(true)}>
+                🎬 Reveal Trailer
+              </button>
+
+            </div>
+          )}
+
+          {/* CAST HINT */}
+
+          {showCast && (
+            <div className="cast">
+              <h3>🎭 Cast</h3>
+              {cast.map(actor => (
+                <p key={actor.id}>{actor.name}</p>
+              ))}
+            </div>
+          )}
+
+          {/* TRAILER HINT */}
+
+          {showTrailer && trailer && (
+            <iframe
+              width="320"
+              height="180"
+              src={`https://www.youtube.com/embed/${trailer}`}
+              title="Trailer"
+              allowFullScreen
+            />
+          )}
+
           {!gameOver && (
             <SearchBar onGuess={handleGuess} />
           )}
@@ -217,31 +282,25 @@ function App() {
       {/* SHOWS PLACEHOLDER */}
 
       {mode === "shows" && (
-
         <div className="mode-placeholder">
           <h2>📺 Shows Mode Coming Soon</h2>
         </div>
-
       )}
 
       {/* FOOTBALL PLACEHOLDER */}
 
       {mode === "football" && (
-
         <div className="mode-placeholder">
           <h2>⚽ Football Mode Coming Soon</h2>
         </div>
-
       )}
 
       {/* MUSIC PLACEHOLDER */}
 
       {mode === "music" && (
-
         <div className="mode-placeholder">
           <h2>🎵 Music Mode Coming Soon</h2>
         </div>
-
       )}
 
       {/* PLAY AGAIN */}
