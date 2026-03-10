@@ -58,6 +58,8 @@ function App() {
       setGuesses(0);
       setGameOver(false);
 
+      setLoading(false);
+
       const castData = await getMovieCast(movie.id);
       setCast(castData);
 
@@ -67,10 +69,6 @@ function App() {
     } catch (err) {
 
       console.error("Error loading movie", err);
-
-    } finally {
-
-      setLoading(false);
 
     }
 
@@ -90,6 +88,8 @@ function App() {
       setGuesses(0);
       setGameOver(false);
 
+      setLoading(false);
+
       const castData = await getShowCast(show.id);
       setCast(castData);
 
@@ -99,10 +99,6 @@ function App() {
     } catch (err) {
 
       console.error("Error loading show", err);
-
-    } finally {
-
-      setLoading(false);
 
     }
 
@@ -137,6 +133,11 @@ function App() {
   /* ---------------- MODE SWITCH ---------------- */
 
   useEffect(() => {
+
+    // Reset previous mode data
+    setTargetMovie(null);
+    setTargetShow(null);
+    setSong(null);
 
     if (mode === "movies") {
 
@@ -449,6 +450,10 @@ function GameCard({ title, year, rating, poster, blurAmount, guesses, gameOver, 
       <p style={{marginTop:"15px"}}>⭐ Rating: {rating}</p>
       <p>📅 Year: {year?.slice(0,4)}</p>
       <p>🎯 Guesses: {guesses}/5</p>
+
+      <p style={{fontSize:"14px", opacity:0.7}}>
+        💡 Hints unlock as you guess!
+      </p>
 
       {!gameOver && (
         <SearchBar onGuess={handleGuess}/>
