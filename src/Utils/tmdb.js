@@ -65,7 +65,7 @@ export async function searchShows(query) {
 }
 
 /* ------------------------------------------------ */
-/* GENRES */
+/* MOVIE GENRES */
 /* ------------------------------------------------ */
 
 export async function getGenres() {
@@ -78,7 +78,28 @@ export async function getGenres() {
 
   } catch (err) {
 
-    console.error("Genre fetch error:", err);
+    console.error("Movie genre fetch error:", err);
+    return [];
+
+  }
+
+}
+
+/* ------------------------------------------------ */
+/* TV SHOW GENRES */
+/* ------------------------------------------------ */
+
+export async function getShowGenres() {
+
+  try {
+
+    const res = await tmdb.get("/genre/tv/list");
+
+    return res.data.genres;
+
+  } catch (err) {
+
+    console.error("TV genre fetch error:", err);
     return [];
 
   }
@@ -161,7 +182,28 @@ export async function getMovieCast(movieId) {
 }
 
 /* ------------------------------------------------ */
-/* TRAILER */
+/* SHOW CAST */
+/* ------------------------------------------------ */
+
+export async function getShowCast(showId) {
+
+  try {
+
+    const res = await tmdb.get(`/tv/${showId}/credits`);
+
+    return res.data.cast.slice(0, 5);
+
+  } catch (err) {
+
+    console.error("Show cast error:", err);
+    return [];
+
+  }
+
+}
+
+/* ------------------------------------------------ */
+/* MOVIE TRAILER */
 /* ------------------------------------------------ */
 
 export async function getMovieTrailer(movieId) {
@@ -186,6 +228,31 @@ export async function getMovieTrailer(movieId) {
 }
 
 /* ------------------------------------------------ */
+/* SHOW TRAILER */
+/* ------------------------------------------------ */
+
+export async function getShowTrailer(showId) {
+
+  try {
+
+    const res = await tmdb.get(`/tv/${showId}/videos`);
+
+    const trailer = res.data.results.find(
+      video => video.type === "Trailer"
+    );
+
+    return trailer ? trailer.key : null;
+
+  } catch (err) {
+
+    console.error("Show trailer error:", err);
+    return null;
+
+  }
+
+}
+
+/* ------------------------------------------------ */
 /* DAILY MOVIE */
 /* ------------------------------------------------ */
 
@@ -202,5 +269,25 @@ export function getDailyMovie(movies) {
   const day = Math.floor(diff / (1000 * 60 * 60 * 24));
 
   return movies[day % movies.length];
+
+}
+
+/* ------------------------------------------------ */
+/* DAILY SHOW */
+/* ------------------------------------------------ */
+
+export function getDailyShow(shows) {
+
+  if (!shows || shows.length === 0) return null;
+
+  const today = new Date();
+
+  const start = new Date(today.getFullYear(), 0, 0);
+
+  const diff = today - start;
+
+  const day = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  return shows[day % shows.length];
 
 }
