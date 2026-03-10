@@ -1,5 +1,5 @@
 const CLIENT_ID = "84a62592a3814a769a61743dbcb84225";
-const CLIENT_SECRET = "90089b8f10aa4e139c7dbaa2c9fafb95";
+const CLIENT_SECRET = "860cf479f09e489ab998ec0cd9be5012";
 
 let accessToken = null;
 
