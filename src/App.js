@@ -8,8 +8,8 @@ import iptaLogo from "./assets/ipta.png";
 function App() {
 
   const [language, setLanguage] = useState("en");
+  const [mode, setMode] = useState("movies");
 
-  // Safe translation fallback
   const t = translations?.[language] ?? translations?.en ?? {};
 
   const [targetMovie, setTargetMovie] = useState(null);
@@ -22,10 +22,13 @@ function App() {
   const loadMovie = async () => {
     try {
       setLoading(true);
+
       const movie = await getRandomMovie();
+
       setTargetMovie(movie);
       setGuesses(0);
       setGameOver(false);
+
     } catch (err) {
       console.error("Error loading movie", err);
     } finally {
@@ -34,27 +37,39 @@ function App() {
   };
 
   useEffect(() => {
-    loadMovie();
-    getGenres().then(setGenres).catch(console.error);
-  }, []);
+
+    if (mode === "movies") {
+      loadMovie();
+      getGenres().then(setGenres).catch(console.error);
+    }
+
+  }, [mode]);
 
   const handleGuess = (movie) => {
 
     if (!targetMovie || gameOver) return;
 
     if (movie.title === targetMovie.title) {
+
       setGuesses(guesses + 1);
       setGameOver(true);
+
       alert(`${t.win} ${targetMovie.title}`);
+
       return;
+
     }
 
     const newGuesses = guesses + 1;
+
     setGuesses(newGuesses);
 
     if (newGuesses >= 5) {
+
       setGameOver(true);
+
       alert(`${t.lose} ${targetMovie.title}`);
+
     }
 
   };
@@ -64,28 +79,31 @@ function App() {
   const movieGenre =
     genres.find(g => g.id === targetMovie?.genre_ids?.[0])?.name || "Unknown";
 
-  if (loading) {
+  if (loading && mode === "movies") {
+
     return (
       <div className="app">
-        <h2 style={{textAlign:"center", marginTop:"100px"}}>
+        <h2 style={{ textAlign: "center", marginTop: "100px" }}>
           🎬 Loading movie...
         </h2>
       </div>
     );
+
   }
 
   return (
+
     <div className="app">
 
       {/* TOP BAR */}
       <div className="top-bar">
 
         <div className="left">
-          <img src={iptaLogo} alt="IPTA Logo" className="ipta-logo"/>
+          <img src={iptaLogo} alt="IPTA Logo" className="ipta-logo" />
         </div>
 
         <div className="center">
-          🎬 {t.title || "Guess The Movie"}
+          🎮 PAP Guessing Game
         </div>
 
         <div className="right">
@@ -96,8 +114,44 @@ function App() {
 
       </div>
 
+      {/* MODE SELECTOR */}
+
+      <div className="mode-selector">
+
+        <button
+          className={mode === "movies" ? "active" : ""}
+          onClick={() => setMode("movies")}
+        >
+          🎬 Movies
+        </button>
+
+        <button
+          className={mode === "shows" ? "active" : ""}
+          onClick={() => setMode("shows")}
+        >
+          📺 Shows
+        </button>
+
+        <button
+          className={mode === "football" ? "active" : ""}
+          onClick={() => setMode("football")}
+        >
+          ⚽ Football
+        </button>
+
+        <button
+          className={mode === "music" ? "active" : ""}
+          onClick={() => setMode("music")}
+        >
+          🎵 Music
+        </button>
+
+      </div>
+
       {/* SETTINGS */}
+
       {showSettings && (
+
         <div className="settings">
 
           <h3>{t.settings}</h3>
@@ -118,10 +172,12 @@ function App() {
           </select>
 
         </div>
+
       )}
 
-      {/* GAME AREA */}
-      {targetMovie && (
+      {/* MOVIE GAME */}
+
+      {mode === "movies" && targetMovie && (
 
         <div className="movie-card">
 
@@ -131,7 +187,6 @@ function App() {
             style={{ filter: `blur(${blurAmount}px)` }}
           />
 
-          {/* MOVIE TITLE REVEAL */}
           {gameOver && (
             <h2 className="movie-reveal">
               🎬 {targetMovie.title}
@@ -142,7 +197,7 @@ function App() {
 
             <p>⭐ {t.rating}: {targetMovie.vote_average}</p>
 
-            <p>📅 {t.year}: {targetMovie.release_date?.slice(0,4)}</p>
+            <p>📅 {t.year}: {targetMovie.release_date?.slice(0, 4)}</p>
 
             <p>🎭 {t.genre}: {movieGenre}</p>
 
@@ -150,25 +205,64 @@ function App() {
 
           </div>
 
-          {!gameOver && <SearchBar onGuess={handleGuess} />}
+          {!gameOver && (
+            <SearchBar onGuess={handleGuess} />
+          )}
 
         </div>
 
       )}
 
-      {gameOver && (
+      {/* SHOWS PLACEHOLDER */}
+
+      {mode === "shows" && (
+
+        <div className="mode-placeholder">
+          <h2>📺 Shows Mode Coming Soon</h2>
+        </div>
+
+      )}
+
+      {/* FOOTBALL PLACEHOLDER */}
+
+      {mode === "football" && (
+
+        <div className="mode-placeholder">
+          <h2>⚽ Football Mode Coming Soon</h2>
+        </div>
+
+      )}
+
+      {/* MUSIC PLACEHOLDER */}
+
+      {mode === "music" && (
+
+        <div className="mode-placeholder">
+          <h2>🎵 Music Mode Coming Soon</h2>
+        </div>
+
+      )}
+
+      {/* PLAY AGAIN */}
+
+      {gameOver && mode === "movies" && (
+
         <button onClick={loadMovie} className="play-again">
           🔄 {t.playAgain}
         </button>
+
       )}
 
       {/* FOOTER */}
+
       <div className="footer">
         Lucas Almeida — PAP Projeto
       </div>
 
     </div>
+
   );
+
 }
 
 export default App;
