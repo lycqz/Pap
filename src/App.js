@@ -142,7 +142,6 @@ function App() {
       </div>
 
       {/* MODE SELECTOR */}
-
       <div className="mode-selector">
 
         <button
@@ -176,7 +175,6 @@ function App() {
       </div>
 
       {/* SETTINGS */}
-
       {showSettings && (
 
         <div className="settings">
@@ -203,7 +201,6 @@ function App() {
       )}
 
       {/* MOVIE GAME */}
-
       {mode === "movies" && targetMovie && (
 
         <div className="movie-card">
@@ -232,8 +229,6 @@ function App() {
 
           </div>
 
-          {/* HINT BUTTONS */}
-
           {!gameOver && (
             <div className="hint-buttons">
 
@@ -248,8 +243,6 @@ function App() {
             </div>
           )}
 
-          {/* CAST HINT */}
-
           {showCast && (
             <div className="cast">
               <h3>🎭 Cast</h3>
@@ -258,8 +251,6 @@ function App() {
               ))}
             </div>
           )}
-
-          {/* TRAILER HINT */}
 
           {showTrailer && trailer && (
             <iframe
@@ -272,7 +263,10 @@ function App() {
           )}
 
           {!gameOver && (
-            <SearchBar onGuess={handleGuess} />
+            <SearchBar
+              onGuess={handleGuess}
+              mode={mode}
+            />
           )}
 
         </div>
@@ -280,7 +274,6 @@ function App() {
       )}
 
       {/* SHOWS PLACEHOLDER */}
-
       {mode === "shows" && (
         <div className="mode-placeholder">
           <h2>📺 Shows Mode Coming Soon</h2>
@@ -288,7 +281,6 @@ function App() {
       )}
 
       {/* FOOTBALL PLACEHOLDER */}
-
       {mode === "football" && (
         <div className="mode-placeholder">
           <h2>⚽ Football Mode Coming Soon</h2>
@@ -296,7 +288,6 @@ function App() {
       )}
 
       {/* MUSIC PLACEHOLDER */}
-
       {mode === "music" && (
         <div className="mode-placeholder">
           <h2>🎵 Music Mode Coming Soon</h2>
@@ -304,7 +295,6 @@ function App() {
       )}
 
       {/* PLAY AGAIN */}
-
       {gameOver && mode === "movies" && (
 
         <button onClick={loadMovie} className="play-again">
@@ -314,7 +304,6 @@ function App() {
       )}
 
       {/* FOOTER */}
-
       <div className="footer">
         Lucas Almeida — PAP Projeto
       </div>
