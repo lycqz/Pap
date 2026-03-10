@@ -235,8 +235,6 @@ function App() {
 
   const blurAmount = gameOver ? 0 : Math.max(15 - guesses * 3, 0);
 
-  /* ---------------- LOADING ---------------- */
-
   if (loading && (mode === "movies" || mode === "shows" || mode === "music")) {
 
     return (
@@ -334,24 +332,44 @@ function App() {
 
       )}
 
-      {/* MOVIES */}
+      {/* MOVIE MODE */}
 
       {mode === "movies" && targetMovie && (
-        <h2 style={{marginTop:"40px"}}>🎬 Movie Mode</h2>
+
+        <GameCard
+          item={targetMovie}
+          title={targetMovie.title}
+          year={targetMovie.release_date}
+          rating={targetMovie.vote_average}
+          poster={targetMovie.poster_path}
+          blurAmount={blurAmount}
+          guesses={guesses}
+          gameOver={gameOver}
+          handleGuess={handleGuess}
+          cast={cast}
+          trailer={trailer}
+        />
+
       )}
 
-      {/* SHOWS */}
+      {/* SHOW MODE */}
 
       {mode === "shows" && targetShow && (
-        <h2 style={{marginTop:"40px"}}>📺 Show Mode</h2>
-      )}
 
-      {/* FOOTBALL */}
+        <GameCard
+          item={targetShow}
+          title={targetShow.name}
+          year={targetShow.first_air_date}
+          rating={targetShow.vote_average}
+          poster={targetShow.poster_path}
+          blurAmount={blurAmount}
+          guesses={guesses}
+          gameOver={gameOver}
+          handleGuess={handleGuess}
+          cast={cast}
+          trailer={trailer}
+        />
 
-      {mode === "football" && (
-        <div className="mode-placeholder">
-          <h2>⚽ Football Mode Coming Soon</h2>
-        </div>
       )}
 
       {/* MUSIC */}
@@ -398,8 +416,6 @@ function App() {
 
       )}
 
-      {/* FOOTER */}
-
       <div className="footer">
         Lucas Almeida — PAP Projeto
       </div>
@@ -410,4 +426,110 @@ function App() {
 
 }
 
+/* ---------------- GAME CARD ---------------- */
+
+function GameCard({ title, year, rating, poster, blurAmount, guesses, gameOver, handleGuess, cast, trailer }) {
+
+  const [showCast, setShowCast] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(false);
+
+  const posterUrl = poster
+    ? `https://image.tmdb.org/t/p/w500${poster}`
+    : null;
+
+  return (
+
+    <div className="game-card">
+
+      <h2>🎬 Guess the Movie / Show</h2>
+
+      {posterUrl && (
+
+        <img
+          src={posterUrl}
+          alt={title}
+          style={{
+            width:"300px",
+            borderRadius:"10px",
+            filter:`blur(${blurAmount}px)`,
+            transition:"0.3s",
+            marginTop:"20px"
+          }}
+        />
+
+      )}
+
+      <p style={{marginTop:"15px"}}>⭐ Rating: {rating}</p>
+      <p>📅 Year: {year?.slice(0,4)}</p>
+      <p>🎯 Guesses: {guesses}/5</p>
+
+      {!gameOver && (
+        <SearchBar onGuess={handleGuess}/>
+      )}
+
+      {/* CAST HINT */}
+
+      {guesses >= 2 && !showCast && (
+        <button onClick={() => setShowCast(true)}>
+          🎭 Reveal Cast
+        </button>
+      )}
+
+      {showCast && cast?.length > 0 && (
+
+        <div style={{marginTop:"15px"}}>
+
+          <h4>Cast:</h4>
+
+          {cast.slice(0,5).map(actor => (
+            <p key={actor.id}>{actor.name}</p>
+          ))}
+
+        </div>
+
+      )}
+
+      {/* TRAILER HINT */}
+
+      {guesses >= 3 && trailer && !showTrailer && (
+        <button
+          style={{marginTop:"10px"}}
+          onClick={() => setShowTrailer(true)}
+        >
+          🎬 Reveal Trailer
+        </button>
+      )}
+
+      {showTrailer && (
+
+        <div style={{marginTop:"15px"}}>
+
+          <iframe
+            width="400"
+            height="225"
+            src={`https://www.youtube.com/embed/${trailer}`}
+            title="Trailer"
+            allowFullScreen
+          />
+
+        </div>
+
+      )}
+
+      {gameOver && (
+        <button
+          style={{marginTop:"20px"}}
+          onClick={() => window.location.reload()}
+        >
+          Play Again
+        </button>
+      )}
+
+    </div>
+
+  );
+
+}
+
 export default App;
+
