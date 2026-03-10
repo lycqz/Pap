@@ -1,3 +1,4 @@
+import { getRandomMovie, getGenres, getMovieCast } from "./Utils/tmdb";
 import translations from "./translations";
 import { useState, useEffect } from "react";
 import SearchBar from "./Components/SearchBar";
