@@ -11,6 +11,9 @@ import {
   getShowCast,
   getShowTrailer
 } from "./Utils/tmdb";
+
+import { getRandomSong } from "./spotify";
+
 import "./App.css";
 import iptaLogo from "./assets/ipta.png";
 
@@ -23,12 +26,17 @@ function App() {
 
   const [targetMovie, setTargetMovie] = useState(null);
   const [targetShow, setTargetShow] = useState(null);
+  const [song, setSong] = useState(null);
 
   const [genres, setGenres] = useState([]);
   const [showGenres, setShowGenres] = useState([]);
 
   const [guesses, setGuesses] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+
+  const [songGuesses, setSongGuesses] = useState(0);
+  const [musicGameOver, setMusicGameOver] = useState(false);
+
   const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -108,6 +116,32 @@ function App() {
 
   };
 
+  /* ---------------- MUSIC LOADER ---------------- */
+
+  const loadSong = async () => {
+
+    try {
+
+      setLoading(true);
+
+      const randomSong = await getRandomSong();
+
+      setSong(randomSong);
+      setSongGuesses(0);
+      setMusicGameOver(false);
+
+    } catch (err) {
+
+      console.error("Error loading song", err);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
   /* ---------------- MODE SWITCH ---------------- */
 
   useEffect(() => {
@@ -126,9 +160,15 @@ function App() {
 
     }
 
+    if (mode === "music") {
+
+      loadSong();
+
+    }
+
   }, [mode]);
 
-  /* ---------------- GUESS SYSTEM ---------------- */
+  /* ---------------- MOVIE / SHOW GUESS ---------------- */
 
   const handleGuess = (item) => {
 
@@ -148,7 +188,6 @@ function App() {
       setGameOver(true);
 
       alert(`${t.win} ${correctTitle}`);
-
       return;
 
     }
@@ -165,11 +204,40 @@ function App() {
 
   };
 
+  /* ---------------- MUSIC GUESS ---------------- */
+
+  const handleSongGuess = (guess) => {
+
+    if (!song || musicGameOver) return;
+
+    const correct = song.name.toLowerCase();
+    const attempt = guess.toLowerCase();
+
+    if (attempt === correct) {
+
+      alert(`Correct! 🎉 ${song.name}`);
+      setMusicGameOver(true);
+      return;
+
+    }
+
+    const newGuesses = songGuesses + 1;
+    setSongGuesses(newGuesses);
+
+    if (newGuesses >= 5) {
+
+      alert(`You lost! Song was: ${song.name}`);
+      setMusicGameOver(true);
+
+    }
+
+  };
+
   const blurAmount = gameOver ? 0 : Math.max(15 - guesses * 3, 0);
 
   /* ---------------- LOADING ---------------- */
 
-  if (loading && (mode === "movies" || mode === "shows")) {
+  if (loading && (mode === "movies" || mode === "shows" || mode === "music")) {
 
     return (
       <div className="app">
@@ -181,13 +249,12 @@ function App() {
 
   }
 
-  /* ---------------- APP ---------------- */
-
   return (
 
     <div className="app">
 
       {/* TOP BAR */}
+
       <div className="top-bar">
 
         <div className="left">
@@ -207,6 +274,7 @@ function App() {
       </div>
 
       {/* MODE SELECTOR */}
+
       <div className="mode-selector">
 
         <button
@@ -240,6 +308,7 @@ function App() {
       </div>
 
       {/* SETTINGS */}
+
       {showSettings && (
 
         <div className="settings">
@@ -265,47 +334,72 @@ function App() {
 
       )}
 
-      {/* MOVIE MODE */}
+      {/* MOVIES */}
+
       {mode === "movies" && targetMovie && (
-
-        <GameCard
-          item={targetMovie}
-          title={targetMovie.title}
-          year={targetMovie.release_date}
-          rating={targetMovie.vote_average}
-          poster={targetMovie.poster_path}
-        />
-
+        <h2 style={{marginTop:"40px"}}>🎬 Movie Mode</h2>
       )}
 
-      {/* SHOW MODE */}
+      {/* SHOWS */}
+
       {mode === "shows" && targetShow && (
-
-        <GameCard
-          item={targetShow}
-          title={targetShow.name}
-          year={targetShow.first_air_date}
-          rating={targetShow.vote_average}
-          poster={targetShow.poster_path}
-        />
-
+        <h2 style={{marginTop:"40px"}}>📺 Show Mode</h2>
       )}
 
-      {/* FOOTBALL PLACEHOLDER */}
+      {/* FOOTBALL */}
+
       {mode === "football" && (
         <div className="mode-placeholder">
           <h2>⚽ Football Mode Coming Soon</h2>
         </div>
       )}
 
-      {/* MUSIC PLACEHOLDER */}
-      {mode === "music" && (
+      {/* MUSIC */}
+
+      {mode === "music" && song && (
+
         <div className="mode-placeholder">
-          <h2>🎵 Music Mode Coming Soon</h2>
+
+          <h2>🎵 Guess The Song</h2>
+
+          <audio controls>
+            <source src={song.preview_url} type="audio/mpeg" />
+          </audio>
+
+          {!musicGameOver && (
+            <input
+              type="text"
+              placeholder="Guess the song title..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSongGuess(e.target.value);
+                  e.target.value = "";
+                }
+              }}
+              style={{
+                marginTop:"20px",
+                padding:"10px",
+                borderRadius:"6px",
+                border:"none"
+              }}
+            />
+          )}
+
+          {musicGameOver && (
+            <button
+              style={{marginTop:"20px"}}
+              onClick={loadSong}
+            >
+              Next Song
+            </button>
+          )}
+
         </div>
+
       )}
 
       {/* FOOTER */}
+
       <div className="footer">
         Lucas Almeida — PAP Projeto
       </div>
@@ -313,14 +407,6 @@ function App() {
     </div>
 
   );
-
-}
-
-/* ---------------- GAME CARD COMPONENT ---------------- */
-
-function GameCard({ item, title, year, rating, poster }) {
-
-  return null; // placeholder to avoid React errors if you later componentize
 
 }
 
