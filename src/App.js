@@ -30,7 +30,6 @@ function App() {
   const [song, setSong] = useState(null);
 
   const [genres, setGenres] = useState([]);
-  const [showGenres, setShowGenres] = useState([]);
 
   const [guesses, setGuesses] = useState(0);
   const [gameOver, setGameOver] = useState(false);
