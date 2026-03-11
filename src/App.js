@@ -29,7 +29,6 @@ function App() {
   const [targetShow, setTargetShow] = useState(null);
   const [song, setSong] = useState(null);
 
-
   const [guesses, setGuesses] = useState(0);
   const [gameOver, setGameOver] = useState(false);
 
@@ -42,10 +41,10 @@ function App() {
   const [cast, setCast] = useState([]);
   const [trailer, setTrailer] = useState(null);
 
-  /* ---------------- MOVIE LOADER ---------------- */
+  const [genres, setGenres] = useState([]);
+  const [showGenres, setShowGenres] = useState([]);
 
   const loadMovie = async () => {
-
     try {
 
       setLoading(true);
@@ -71,10 +70,7 @@ function App() {
       setLoading(false);
 
     }
-
   };
-
-  /* ---------------- SHOW LOADER ---------------- */
 
   const loadShow = async () => {
 
@@ -106,8 +102,6 @@ function App() {
 
   };
 
-  /* ---------------- MUSIC LOADER ---------------- */
-
   const loadSong = async () => {
 
     try {
@@ -117,8 +111,10 @@ function App() {
       const randomSong = await getRandomSong();
 
       if (!randomSong) {
+
         console.error("No song returned");
         return;
+
       }
 
       setSong(randomSong);
@@ -136,8 +132,6 @@ function App() {
     }
 
   };
-
-  /* ---------------- MODE SWITCH ---------------- */
 
   useEffect(() => {
 
@@ -168,8 +162,6 @@ function App() {
     }
 
   }, [mode]);
-
-  /* ---------------- MOVIE / SHOW GUESS ---------------- */
 
   const handleGuess = (item) => {
 
@@ -204,8 +196,6 @@ function App() {
 
   };
 
-  /* ---------------- MUSIC GUESS ---------------- */
-
   const handleSongGuess = (guess) => {
 
     if (!song || musicGameOver) return;
@@ -238,11 +228,15 @@ function App() {
   if (loading) {
 
     return (
+
       <div className="app">
+
         <h2 style={{ textAlign: "center", marginTop: "100px" }}>
           🎬 Loading...
         </h2>
+
       </div>
+
     );
 
   }
@@ -258,13 +252,15 @@ function App() {
         </div>
 
         <div className="center">
-          🎮 PAP Guessing Game
+          🎮 {t.title}
         </div>
 
         <div className="right">
+
           <button onClick={() => setShowSettings(!showSettings)}>
             ⚙ {t.settings}
           </button>
+
         </div>
 
       </div>
@@ -275,28 +271,28 @@ function App() {
           className={mode === "movies" ? "active" : ""}
           onClick={() => setMode("movies")}
         >
-          🎬 Movies
+          🎬 {t.movies}
         </button>
 
         <button
           className={mode === "shows" ? "active" : ""}
           onClick={() => setMode("shows")}
         >
-          📺 Shows
+          📺 {t.shows}
         </button>
 
         <button
           className={mode === "football" ? "active" : ""}
           onClick={() => setMode("football")}
         >
-          ⚽ Football
+          ⚽ {t.football}
         </button>
 
         <button
           className={mode === "music" ? "active" : ""}
           onClick={() => setMode("music")}
         >
-          🎵 Music
+          🎵 {t.music}
         </button>
 
       </div>
@@ -329,6 +325,7 @@ function App() {
       {mode === "movies" && targetMovie && (
 
         <GameCard
+          t={t}
           title={targetMovie.title}
           year={targetMovie.release_date}
           rating={targetMovie.vote_average}
@@ -346,6 +343,7 @@ function App() {
       {mode === "shows" && targetShow && (
 
         <GameCard
+          t={t}
           title={targetShow.name}
           year={targetShow.first_air_date}
           rating={targetShow.vote_average}
@@ -364,38 +362,37 @@ function App() {
 
         <div className="mode-placeholder">
 
-          <h2>🎵 Guess The Song</h2>
+          <h2>🎵 {t.music}</h2>
 
           <audio controls>
             <source src={song.preview_url} type="audio/mpeg" />
           </audio>
 
           {!musicGameOver && (
+
             <input
               type="text"
-              placeholder="Guess the song title..."
+              placeholder={t.guessSong}
               onKeyDown={(e) => {
+
                 if (e.key === "Enter") {
+
                   handleSongGuess(e.target.value);
                   e.target.value = "";
+
                 }
-              }}
-              style={{
-                marginTop:"20px",
-                padding:"10px",
-                borderRadius:"6px",
-                border:"none"
+
               }}
             />
+
           )}
 
           {musicGameOver && (
-            <button
-              style={{marginTop:"20px"}}
-              onClick={loadSong}
-            >
-              Next Song
+
+            <button onClick={loadSong}>
+              {t.nextSong}
             </button>
+
           )}
 
         </div>
@@ -405,7 +402,7 @@ function App() {
       {mode === "football" && (
 
         <div className="mode-placeholder">
-          <h2>⚽ Football Mode Coming Soon</h2>
+          <h2>⚽ {t.footballSoon}</h2>
         </div>
 
       )}
@@ -420,15 +417,19 @@ function App() {
 
 }
 
-function GameCard({ title, year, rating, poster, blurAmount, guesses, gameOver, handleGuess, cast, trailer }) {
-
-  const [showCast, setShowCast] = useState(false);
-  const [showTrailer, setShowTrailer] = useState(false);
-
-  useEffect(() => {
-    setShowCast(false);
-    setShowTrailer(false);
-  }, [title]);
+function GameCard({
+  t,
+  title,
+  year,
+  rating,
+  poster,
+  blurAmount,
+  guesses,
+  gameOver,
+  handleGuess,
+  cast,
+  trailer
+}) {
 
   const posterUrl = poster
     ? `https://image.tmdb.org/t/p/w500${poster}`
@@ -436,86 +437,35 @@ function GameCard({ title, year, rating, poster, blurAmount, guesses, gameOver, 
 
   return (
 
-    <div className="game-card">
-
-      <h2>🎬 Guess the Movie / Show</h2>
+    <div className="movie-card">
 
       {posterUrl && (
+
         <img
           src={posterUrl}
           alt={title}
           style={{
-            width:"300px",
-            borderRadius:"10px",
-            filter:`blur(${blurAmount}px)`,
-            transition:"0.3s",
-            marginTop:"20px"
+            filter: `blur(${blurAmount}px)`
           }}
         />
+
       )}
 
-      <p style={{marginTop:"15px"}}>⭐ Rating: {rating}</p>
-      <p>📅 Year: {year?.slice(0,4)}</p>
-      <p>🎯 Guesses: {guesses}/5</p>
+      <p>⭐ {t.rating}: {rating}</p>
+      <p>📅 {t.year}: {year?.slice(0, 4)}</p>
+      <p>🎯 {t.guesses}: {guesses}/5</p>
 
       {!gameOver && (
-        <SearchBar onGuess={handleGuess}/>
+        <SearchBar onGuess={handleGuess} t={t} />
       )}
 
-      <button
-        disabled={guesses < 2}
-        style={{
-          marginTop:"10px",
-          opacity: guesses < 2 ? 0.5 : 1
-        }}
-        onClick={() => setShowCast(true)}
-      >
-        🎭 Reveal Cast
+      <button>
+        🎭 {t.revealCast}
       </button>
 
-      {showCast && cast?.length > 0 && (
-        <div style={{marginTop:"10px"}}>
-          <h4>Cast:</h4>
-          {cast.slice(0,5).map(actor => (
-            <p key={actor.id}>{actor.name}</p>
-          ))}
-        </div>
-      )}
-
-      <button
-        disabled={guesses < 4}
-        style={{
-          marginTop:"10px",
-          opacity: guesses < 4 ? 0.5 : 1
-        }}
-        onClick={() => setShowTrailer(true)}
-      >
-        🎬 Reveal Trailer
+      <button>
+        🎬 {t.revealTrailer}
       </button>
-
-      {showTrailer && trailer && (
-        <div style={{marginTop:"15px"}}>
-          <iframe
-            width="400"
-            height="225"
-            src={`https://www.youtube.com/embed/${trailer}`}
-            title="Trailer"
-            allowFullScreen
-          />
-        </div>
-      )}
-
-      {gameOver && (
-        <button
-          style={{
-            marginTop:"20px",
-            padding:"10px 20px"
-          }}
-          onClick={() => window.location.reload()}
-        >
-          🔁 Play Again
-        </button>
-      )}
 
     </div>
 
