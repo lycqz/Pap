@@ -58,8 +58,6 @@ function App() {
       setGuesses(0);
       setGameOver(false);
 
-      setLoading(false);
-
       const castData = await getMovieCast(movie.id);
       setCast(castData);
 
@@ -69,6 +67,10 @@ function App() {
     } catch (err) {
 
       console.error("Error loading movie", err);
+
+    } finally {
+
+      setLoading(false);
 
     }
 
@@ -88,8 +90,6 @@ function App() {
       setGuesses(0);
       setGameOver(false);
 
-      setLoading(false);
-
       const castData = await getShowCast(show.id);
       setCast(castData);
 
@@ -99,6 +99,10 @@ function App() {
     } catch (err) {
 
       console.error("Error loading show", err);
+
+    } finally {
+
+      setLoading(false);
 
     }
 
@@ -113,6 +117,11 @@ function App() {
       setLoading(true);
 
       const randomSong = await getRandomSong();
+
+      if (!randomSong) {
+        console.error("No song returned");
+        return;
+      }
 
       setSong(randomSong);
       setSongGuesses(0);
@@ -134,10 +143,11 @@ function App() {
 
   useEffect(() => {
 
-    // Reset previous mode data
     setTargetMovie(null);
     setTargetShow(null);
     setSong(null);
+    setCast([]);
+    setTrailer(null);
 
     if (mode === "movies") {
 
@@ -170,14 +180,13 @@ function App() {
         ? targetMovie?.title
         : targetShow?.name;
 
-    const guessTitle =
-      item.title || item.name;
+    const guessTitle = item.title || item.name;
 
     if (!correctTitle || gameOver) return;
 
     if (guessTitle === correctTitle) {
 
-      setGuesses(guesses + 1);
+      setGuesses(g => g + 1);
       setGameOver(true);
 
       alert(`${t.win} ${correctTitle}`);
@@ -451,10 +460,6 @@ function GameCard({ title, year, rating, poster, blurAmount, guesses, gameOver, 
       <p>📅 Year: {year?.slice(0,4)}</p>
       <p>🎯 Guesses: {guesses}/5</p>
 
-      <p style={{fontSize:"14px", opacity:0.7}}>
-        💡 Hints unlock as you guess!
-      </p>
-
       {!gameOver && (
         <SearchBar onGuess={handleGuess}/>
       )}
@@ -463,12 +468,11 @@ function GameCard({ title, year, rating, poster, blurAmount, guesses, gameOver, 
         disabled={guesses < 2}
         style={{
           marginTop:"10px",
-          opacity: guesses < 2 ? 0.5 : 1,
-          cursor: guesses < 2 ? "not-allowed" : "pointer"
+          opacity: guesses < 2 ? 0.5 : 1
         }}
         onClick={() => setShowCast(true)}
       >
-        🎭 Reveal Cast (Guess 2)
+        🎭 Reveal Cast
       </button>
 
       {showCast && cast?.length > 0 && (
@@ -480,30 +484,15 @@ function GameCard({ title, year, rating, poster, blurAmount, guesses, gameOver, 
         </div>
       )}
 
-      {gameOver && (
-        <button
-          style={{
-            marginTop:"20px",
-            padding:"10px 20px",
-            fontSize:"16px",
-            cursor:"pointer"
-          }}
-          onClick={() => window.location.reload()}
-        >
-          🔁 Play Again
-        </button>
-      )}
-
       <button
         disabled={guesses < 4}
         style={{
           marginTop:"10px",
-          opacity: guesses < 4 ? 0.5 : 1,
-          cursor: guesses < 4 ? "not-allowed" : "pointer"
+          opacity: guesses < 4 ? 0.5 : 1
         }}
         onClick={() => setShowTrailer(true)}
       >
-        🎬 Reveal Trailer (Guess 4)
+        🎬 Reveal Trailer
       </button>
 
       {showTrailer && trailer && (
@@ -516,6 +505,18 @@ function GameCard({ title, year, rating, poster, blurAmount, guesses, gameOver, 
             allowFullScreen
           />
         </div>
+      )}
+
+      {gameOver && (
+        <button
+          style={{
+            marginTop:"20px",
+            padding:"10px 20px"
+          }}
+          onClick={() => window.location.reload()}
+        >
+          🔁 Play Again
+        </button>
       )}
 
     </div>
