@@ -1,5 +1,5 @@
-const CLIENT_ID = "84a62592a3814a769a61743dbcb84225";
-const CLIENT_SECRET = "860cf479f09e489ab998ec0cd9be5012";
+const CLIENT_ID = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
+const CLIENT_SECRET = process.env.REACT_APP_SPOTIFY_CLIENT_SECRET;
 
 let accessToken = null;
 
@@ -7,15 +7,17 @@ async function getAccessToken() {
 
   if (accessToken) return accessToken;
 
-  const response = await fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Authorization:
-        "Basic " + btoa(`${CLIENT_ID}:${CLIENT_SECRET}`)
-    },
-    body: "grant_type=client_credentials"
-  });
+  const response = await fetch(
+    "https://accounts.spotify.com/api/token",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: "Basic " + btoa(`${CLIENT_ID}:${CLIENT_SECRET}`)
+      },
+      body: "grant_type=client_credentials"
+    }
+  );
 
   const data = await response.json();
   accessToken = data.access_token;
@@ -27,11 +29,11 @@ export async function getRandomSong() {
 
   const token = await getAccessToken();
 
-  const randomLetter =
-    "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)];
+  // Popular Spotify playlist (Top Hits)
+  const playlistId = "37i9dQZF1DXcBWIGoYBM5M";
 
   const res = await fetch(
-    `https://api.spotify.com/v1/search?q=${randomLetter}&type=track&limit=50`,
+    `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`,
     {
       headers: {
         Authorization: `Bearer ${token}`
@@ -41,10 +43,21 @@ export async function getRandomSong() {
 
   const data = await res.json();
 
-  const tracks = data.tracks.items.filter(
-    t => t.preview_url
-  );
+  if (!data?.items) {
+    throw new Error("Spotify playlist failed");
+  }
 
-  return tracks[Math.floor(Math.random() * tracks.length)];
+  // Filter songs that have previews
+  const tracks = data.items
+    .map(item => item.track)
+    .filter(track => track && track.preview_url);
 
+  if (tracks.length === 0) {
+    throw new Error("No playable tracks found");
+  }
+
+  const randomTrack =
+    tracks[Math.floor(Math.random() * tracks.length)];
+
+  return randomTrack;
 }
