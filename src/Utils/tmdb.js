@@ -3,6 +3,7 @@ import axios from "axios";
 const API_KEY = "ba97aa338bf2bf969211ff265a9c7184";
 const BASE_URL = "https://api.themoviedb.org/3";
 
+<<<<<<< HEAD
 /* ------------------------------------------------ */
 /* AXIOS INSTANCE */
 /* ------------------------------------------------ */
@@ -291,3 +292,49 @@ export function getDailyShow(shows) {
   return shows[day % shows.length];
 
 }
+=======
+export async function searchMovies(query, language = "en-US") {
+
+  const res = await axios.get(`${BASE_URL}/search/movie`, {
+    params:{
+      api_key:API_KEY,
+      query,
+      language
+    }
+  });
+
+  return res.data.results || [];
+
+}
+
+export async function getGenres(language = "en-US"){
+
+  const res = await axios.get(`${BASE_URL}/genre/movie/list`, {
+    params:{
+      api_key:API_KEY,
+      language
+    }
+  });
+
+  return res.data.genres || [];
+
+}
+
+export async function getRandomMovie(language = "en-US"){
+
+  const randomPage = Math.floor(Math.random()*10)+1;
+
+  const res = await axios.get(`${BASE_URL}/movie/popular`,{
+    params:{
+      api_key:API_KEY,
+      page:randomPage,
+      language
+    }
+  });
+
+  const movies = res.data.results;
+
+  return movies[Math.floor(Math.random()*movies.length)];
+
+}
+>>>>>>> a9327b8 (final fixes)
